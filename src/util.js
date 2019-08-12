@@ -188,7 +188,7 @@ util.buildTransaction = function(inputs, dest, message, change, network, oldStyl
 	// Add message.
 	var encrypted = message.toEncrypted(inputs[0].txid, oldStyle);
 	for(var bytesWrote=0; bytesWrote<encrypted.length; bytesWrote+=util.MAX_OP_RETURN) {
-		tx.addOutput(bitcoin.script.nullDataOutput(encrypted.slice(bytesWrote, bytesWrote+util.MAX_OP_RETURN)), 0);
+		tx.addOutput(bitcoin.script.nullData.output.encode(encrypted.slice(bytesWrote, bytesWrote+util.MAX_OP_RETURN)), 0);
 	}
 	// Add change.
 	if(change.fee_per_kb) throw new Error('Calculating fee from change.fee_per_kb is not supported yet');
