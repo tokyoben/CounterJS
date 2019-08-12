@@ -84,8 +84,8 @@ util.mnemonicToPrivateKey = function(passphrase, index, network) {
 		if(w3<0) throw new Error('Invalid word specified: ' + mnemonic[3*i+2]);
 		seed.writeUInt32BE(w1 + N*mod(w2-w1, N) + N*N*mod(w3-w2, N), 4*i);
 	}
-	var master = bitcoin.HDNode.fromSeedBuffer(seed, util.getBitcoinJSNetwork(network));
-	return master.derivePath('m/0\'/0/'+index).keyPair.toWIF();
+	var master = bitcoin.bip32.fromSeed(seed, util.getBitcoinJSNetwork(network));
+	return master.derivePath('m/0\'/0/'+index).toWIF();
 };
 
 util.assetIdToName = function(asset_id) {
@@ -187,8 +187,9 @@ util.buildTransaction = function(inputs, dest, message, change, network, oldStyl
 	}
 	// Add message.
 	var encrypted = message.toEncrypted(inputs[0].txid, oldStyle);
-	for(var bytesWrote=0; bytesWrote<encrypted.length; bytesWrote+=util.MAX_OP_RETURN) {
-		tx.addOutput(bitcoin.script.nullDataOutput(encrypted.slice(bytesWrote, bytesWrote+util.MAX_OP_RETURN)), 0);
+    for(var bytesWrote=0; bytesWrote<encrypted.length; bytesWrote+=util.MAX_OP_RETURN) {
+		var output = bitcoin.payments.embed({data: [encrypted.slice(bytesWrote, bytesWrote+util.MAX_OP_RETURN)]}).output
+		tx.addOutput(output, 0);
 	}
 	// Add change.
 	if(change.fee_per_kb) throw new Error('Calculating fee from change.fee_per_kb is not supported yet');
